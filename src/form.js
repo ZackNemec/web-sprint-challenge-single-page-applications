@@ -1,4 +1,5 @@
 import React from "react";
+import * as yup from "yup";
 import {
   Card,
   Form,
@@ -11,6 +12,7 @@ import {
   DropdownMenu,
   Label,
 } from "reactstrap";
+import axios from "axios";
 
 const PizzaForm = () => {
   const [isOpen, setClosed] = React.useState(false);
@@ -24,11 +26,21 @@ const PizzaForm = () => {
     pepperoni: false,
     bacon: false,
   });
+  const formSchema = yup.object().shape({
+    name: yup.string().required().min(2),
+  });
   const changleHandler = (event) => {
-    setFormData({ ...FormData, [event.target.name]: event.target.value });
+    setFormData({ ...formData, [event.target.name]: event.target.value });
   };
   const handleMeats = (event) => {
-    setFormData({ ...FormData, [event.target.name]: event.target.checked });
+    setFormData({ ...formData, [event.target.name]: event.target.checked });
+  };
+  const submit = () => {
+    formSchema.validate(formData).then(() => {
+      axios.post("https://reqres.in/api/users", formData).then((results) => {
+        console.log("returned data from post", results.data);
+      });
+    });
   };
 
   return (
@@ -40,13 +52,21 @@ const PizzaForm = () => {
           src={require("./Assets/Pizza.jpg")}
         />
       </Card>
-      <Form style={{ width: "80%", margin: "0 auto" }}>
+      <Form
+        style={{ width: "80%", margin: "0 auto" }}
+        data-cy="submit"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+          console.log(formData);
+        }}
+      >
         <FormGroup>
           <legend>name</legend>
           <Input
             type="text"
             name="name"
-            id="name"
+            data-cy="name"
             value={formData.name}
             onChange={changleHandler}
           />
@@ -135,9 +155,9 @@ const PizzaForm = () => {
             <Label check>
               <Input
                 type="checkbox"
-                name="meat"
-                value="chicken"
-                checked={false}
+                name="chicken"
+                data-cy="checkbox1"
+                checked={formData.chicken}
                 onChange={handleMeats}
               />
               Chicken
@@ -147,9 +167,9 @@ const PizzaForm = () => {
             <Label check>
               <Input
                 type="checkbox"
-                name="meat"
-                value="bacon"
-                checked={false}
+                name="bacon"
+                data-cy="checkbox2"
+                checked={formData.bacon}
                 onChange={handleMeats}
               />
               Bacon
@@ -159,9 +179,9 @@ const PizzaForm = () => {
             <Label check>
               <Input
                 type="checkbox"
-                name="meat"
-                value="sausage"
-                checked={false}
+                name="sausage"
+                data-cy="checkbox3"
+                checked={formData.sausage}
                 onChange={handleMeats}
               />
               Sausage
@@ -171,9 +191,9 @@ const PizzaForm = () => {
             <Label check>
               <Input
                 type="checkbox"
-                name="meat"
-                value="pepperoni"
-                checked={false}
+                name="pepperoni"
+                data-cy="checkbox4"
+                checked={formData.pepperoni}
                 onChange={handleMeats}
               />
               Pepperoni
@@ -182,7 +202,12 @@ const PizzaForm = () => {
         </FormGroup>
         <FormGroup>
           <legend>Special Instructions</legend>
-          <Input type="textarea" name="special"></Input>
+          <Input
+            type="textarea"
+            name="special"
+            value={formData.special}
+            onChange={changleHandler}
+          ></Input>
         </FormGroup>
         <Card>
           <Button>Add to Order</Button>
